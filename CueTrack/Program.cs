@@ -7,7 +7,8 @@ using System.Configuration;
 using System.Net;
 
 Console.WriteLine("AVOLITES TITAN CUE TRACK");
-Console.WriteLine("Synchronises the live cue between all running cue lists allowing a backup console to track the master conesole.");
+Console.WriteLine("Synchronises the live cue between all running cue lists allowing a backup console to track the master console.");
+Console.WriteLine("Please ensure that you have loaded the same show on the master and backup consoles!");
 Console.WriteLine();
 
 var config = new ConfigurationBuilder()
