@@ -34,11 +34,16 @@ namespace CueTrack
         public int CueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the last update to this tracked playback.
+        /// </summary>
+        public DateTime LastUpdate { get; set; }
+
+        /// <summary>
         /// Called periodically to carry out the sync and update the state.
         /// </summary>
         /// <param name="handle">The most recent handle information for the playback.</param>
         /// <param name="backup">The backup connection to sync to.</param>
-        public async Task Pulse(HandleInformation handle, Titan backup)
+        public async Task Pulse(HandleInformation handle, Titan backup, DateTime timeStamp)
         {
             bool loaded = handle.Active;
             if(Loaded != loaded)
@@ -71,6 +76,8 @@ namespace CueTrack
                     Console.WriteLine($"{Legend}:{cueInformation.Legend} CUE {cueInformation.CueNumber}");
                 }
             }
+
+            LastUpdate = timeStamp;
         }
     }
 }

@@ -61,29 +61,35 @@ while(!await master.IsConnected() || !await backup.IsConnected())
 
 Console.WriteLine($"Started syncing {master.ConnectedDevice.Legend} to backup {backup.ConnectedDevice.Legend}");
 
-var trackers = new List<PlaybackTracker>();
-var handles = await master.Handles.GetHandles("Playbacks");
-
-foreach (var handle in handles.Where(item => item.Type == "cueListHandle"))
-{
-    trackers.Add(new PlaybackTracker()
-    {
-        TitanId = handle.TitanId,
-        Legend = handle.Legend
-    });
-}
+var trackers = new Dictionary<int,PlaybackTracker>();
 
 while (true)
 {
-    var handleUpdates = await master.Handles.GetHandles("Playbacks", verbose: true);
-    foreach(var tracker in trackers)
+    var handleUpdates = (await master.Handles.GetHandles("Playbacks", verbose: true)).Where(item => item.Type == "cueListHandle");
+    var timeStamp = DateTime.UtcNow;
+    var orphanedTracker = new HashSet<int>(trackers.Keys);
+
+    foreach(var cueListHandle in handleUpdates)
     {
-        var handle = handleUpdates.FirstOrDefault(item=> item.TitanId == tracker.TitanId);
-        if(handle != null)
+        PlaybackTracker tracker;
+        if(!trackers.TryGetValue(cueListHandle.TitanId, out tracker))
         {
-            await tracker.Pulse(handle, backup);
-        }        
+            tracker = new PlaybackTracker()
+            {
+                TitanId = cueListHandle.TitanId,
+                Legend = cueListHandle.Legend
+            };
+
+            trackers.Add(tracker.TitanId, tracker);
+        }
+
+        orphanedTracker.Remove(tracker.TitanId);
+        await tracker.Pulse(cueListHandle, backup, timeStamp);     
     }
+
+    foreach (var orphanKey in orphanedTracker)
+        trackers.Remove(orphanKey);
+
     await Task.Delay(1000);
 }
 
