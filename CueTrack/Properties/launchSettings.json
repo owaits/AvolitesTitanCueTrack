@@ -1,8 +1,7 @@
 {
   "profiles": {
     "CueTrack": {
-      "commandName": "Project",
-      "commandLineArgs": "master=127.0.0.1 backup=127.0.0.1"
+      "commandName": "Project"
     }
   }
 }

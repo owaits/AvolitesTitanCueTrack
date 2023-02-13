@@ -12,8 +12,8 @@ Console.WriteLine("Please ensure that you have loaded the same show on the maste
 Console.WriteLine();
 
 var config = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json")
     .AddCommandLine(Environment.GetCommandLineArgs())
+    .AddJsonFile("appsettings.json")
     .Build();
 
 string? masterIP = config["master"];
