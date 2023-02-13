@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CueTrack
@@ -62,20 +63,29 @@ namespace CueTrack
                 Loaded = loaded;
             }
 
-            if(Loaded)
-            {
-                int? cueId = handle.Information[1]["LiveCue"]?.GetValue<int>();
-                if(cueId != null && CueId != cueId)
+            
+                if(Loaded)
                 {
-                    var cueInformation = await backup.CueLists.GetCue(TitanId, (int) cueId);
+                    int? cueId = handle.Information[1]["LiveCue"]?.GetValue<int>();
+                    if(cueId != null && CueId != cueId)
+                    {
+                        try
+                        {
+                            var cueInformation = await backup.CueLists.GetCue(TitanId, (int) cueId);
 
-                    await backup.CueLists.SetNextCue(HandleReference.FromTitanId(TitanId), cueInformation.CueNumber);
-                    await backup.CueLists.Play(HandleReference.FromTitanId(TitanId));
-                    CueId = (int) cueId;
-
-                    Console.WriteLine($"{Legend}:{cueInformation.Legend} CUE {cueInformation.CueNumber}");
-                }
-            }
+                            await backup.CueLists.SetNextCue(HandleReference.FromTitanId(TitanId), cueInformation.CueNumber);
+                            await backup.CueLists.Play(HandleReference.FromTitanId(TitanId));
+                        
+                            Console.WriteLine($"{Legend}:{cueInformation.Legend} CUE {cueInformation.CueNumber}");
+                        }
+                        catch (JsonException ex)
+                        {
+                            Console.Write(ex.Message);
+                        }
+                    
+                        CueId = (int) cueId;                        
+                    }
+                }  
 
             LastUpdate = timeStamp;
         }
