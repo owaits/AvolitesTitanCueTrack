@@ -64,28 +64,34 @@ namespace CueTrack
             }
 
             
-                if(Loaded)
+            if(Loaded)
+            {
+                int? cueId = handle.Information[1]["LiveCue"]?.GetValue<int>();
+                if(cueId != null && CueId != cueId)
                 {
-                    int? cueId = handle.Information[1]["LiveCue"]?.GetValue<int>();
-                    if(cueId != null && CueId != cueId)
+                    try
                     {
-                        try
-                        {
-                            var cueInformation = await backup.CueLists.GetCue(TitanId, (int) cueId);
+                        var cueInformation = await backup.CueLists.GetCue(TitanId, (int) cueId);
 
-                            await backup.CueLists.SetNextCue(HandleReference.FromTitanId(TitanId), cueInformation.CueNumber);
-                            await backup.CueLists.Play(HandleReference.FromTitanId(TitanId));
+                        //Always fire to ensure the playback is always loaded and running the cue.
+                        await backup.Playbacks.Fire(HandleReference.FromTitanId(TitanId));
+
+                        //Set the next cue number ready to Go on the cue.
+                        await backup.CueLists.SetNextCue(HandleReference.FromTitanId(TitanId), cueInformation.CueNumber);
+
+                        //Play the cue.
+                        await backup.CueLists.Play(HandleReference.FromTitanId(TitanId));
                         
-                            Console.WriteLine($"{Legend}:{cueInformation.Legend} CUE {cueInformation.CueNumber}");
-                        }
-                        catch (JsonException ex)
-                        {
-                            Console.Write(ex.Message);
-                        }
-                    
-                        CueId = (int) cueId;                        
+                        Console.WriteLine($"{Legend}:{cueInformation.Legend} CUE {cueInformation.CueNumber}");
                     }
-                }  
+                    catch (JsonException ex)
+                    {
+                        Console.Write(ex.Message);
+                    }
+                    
+                    CueId = (int) cueId;                        
+                }
+            }  
 
             LastUpdate = timeStamp;
         }
