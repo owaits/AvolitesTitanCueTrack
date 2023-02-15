@@ -53,44 +53,67 @@ int port = int.Parse(config["port"] ?? "4430");
 Titan master = new Titan(masterAddress, port);
 Titan backup = new Titan(backupAddress, port);
 
-while(!await master.IsConnected() || !await backup.IsConnected())
-{
-    Console.WriteLine("Waiting for connection to MASTER and BACKUP console...");
-    await Task.Delay(30000);
-}
-
-Console.WriteLine($"Started syncing {master.ConnectedDevice.Legend} to backup {backup.ConnectedDevice.Legend}");
-
-var trackers = new Dictionary<int,PlaybackTracker>();
-
 while (true)
-{
-    var handleUpdates = (await master.Handles.GetHandles("Playbacks", verbose: true)).Where(item => item.Type == "cueListHandle");
-    var timeStamp = DateTime.UtcNow;
-    var orphanedTracker = new HashSet<int>(trackers.Keys);
-
-    foreach(var cueListHandle in handleUpdates)
+{    
+    //Try to connect to the master consoles.
+    while (!await master.IsConnected())
     {
-        PlaybackTracker tracker;
-        if(!trackers.TryGetValue(cueListHandle.TitanId, out tracker))
-        {
-            tracker = new PlaybackTracker()
-            {
-                TitanId = cueListHandle.TitanId,
-                Legend = cueListHandle.Legend
-            };
-
-            trackers.Add(tracker.TitanId, tracker);
-        }
-
-        orphanedTracker.Remove(tracker.TitanId);
-        await tracker.Pulse(cueListHandle, backup, timeStamp);     
+        Console.WriteLine("Waiting for connection to MASTER console...");
+        await Task.Delay(30000);
     }
 
-    foreach (var orphanKey in orphanedTracker)
-        trackers.Remove(orphanKey);
+    //Try to connect to the backup consoles.
+    while (!await backup.IsConnected())
+    {
+        Console.WriteLine("Waiting for connection to BACKUP console...");
+        await Task.Delay(30000);
+    }
 
-    await Task.Delay(1000);
+    Console.WriteLine($"Started syncing {master.ConnectedDevice.Legend} to backup {backup.ConnectedDevice.Legend}");
+
+    var trackers = new Dictionary<int, PlaybackTracker>();
+    var setListTracker = new SetListTracker();
+
+    try
+    {
+        while (true)
+        {
+            var timeStamp = DateTime.UtcNow;
+
+            await setListTracker.Pulse(master, backup, timeStamp);
+
+            var handleUpdates = (await master.Handles.GetHandles("Playbacks", verbose: true)).Where(item => item.Type == "cueListHandle");
+
+            var orphanedTracker = new HashSet<int>(trackers.Keys);
+
+            foreach (var cueListHandle in handleUpdates)
+            {
+                PlaybackTracker tracker;
+                if (!trackers.TryGetValue(cueListHandle.TitanId, out tracker))
+                {
+                    tracker = new PlaybackTracker()
+                    {
+                        TitanId = cueListHandle.TitanId,
+                        Legend = cueListHandle.Legend
+                    };
+
+                    trackers.Add(tracker.TitanId, tracker);
+                }
+
+                orphanedTracker.Remove(tracker.TitanId);
+                await tracker.Pulse(cueListHandle, backup, timeStamp);
+            }
+
+            foreach (var orphanKey in orphanedTracker)
+                trackers.Remove(orphanKey);
+
+            await Task.Delay(1000);
+        }
+    }
+    catch (HttpRequestException)
+    {
+        Console.WriteLine("LOST CONNECTION!!!");
+    }    
 }
 
 
