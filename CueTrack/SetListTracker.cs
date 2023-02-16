@@ -28,14 +28,15 @@ namespace CueTrack
         {
             try
             {
-                var activeTrack = await master.SetList.GetActiveTrack();
+                var masterActiveTrack = await master.SetList.GetActiveTrack();
+                var backupActiveTrack = await backup.SetList.GetActiveTrack();
 
-                if(activeTrack.TitanId != ActiveTrackId)
+                if (masterActiveTrack.TitanId != ActiveTrackId || masterActiveTrack.TitanId != backupActiveTrack.TitanId)
                 {
-                    await backup.SetList.FireTrack(HandleReference.FromTitanId(activeTrack.TitanId));
-                    ActiveTrackId = activeTrack.TitanId;
+                    await backup.SetList.FireTrack(HandleReference.FromTitanId(masterActiveTrack.TitanId));
+                    ActiveTrackId = masterActiveTrack.TitanId;
 
-                    Console.WriteLine($"TRACK {activeTrack.Legend} FIRED");
+                    Console.WriteLine($"TRACK {masterActiveTrack.Legend} FIRED");
                 }
             }
             catch (JsonException ex)
