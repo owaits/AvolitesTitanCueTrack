@@ -31,13 +31,17 @@ namespace CueTrack
                 var masterActiveTrack = await master.SetList.GetActiveTrack();
                 var backupActiveTrack = await backup.SetList.GetActiveTrack();
 
-                if (masterActiveTrack.TitanId != ActiveTrackId || masterActiveTrack.TitanId != backupActiveTrack.TitanId)
+                if(masterActiveTrack != null)
                 {
-                    await backup.SetList.FireTrack(HandleReference.FromTitanId(masterActiveTrack.TitanId));
-                    ActiveTrackId = masterActiveTrack.TitanId;
+                    if (masterActiveTrack.TitanId != ActiveTrackId || masterActiveTrack.TitanId != backupActiveTrack?.TitanId)
+                    {
+                        await backup.SetList.FireTrack(HandleReference.FromTitanId(masterActiveTrack.TitanId));
+                        ActiveTrackId = masterActiveTrack.TitanId;
 
-                    Console.WriteLine($"TRACK {masterActiveTrack.Legend} FIRED");
+                        Console.WriteLine($"TRACK {masterActiveTrack.Legend} FIRED");
+                    }
                 }
+
             }
             catch (JsonException ex)
             {
