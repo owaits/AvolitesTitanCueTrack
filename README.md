@@ -1,6 +1,6 @@
 # Avolites Titan Cue Track
 
-Cue Track is intended to be used with an Avolites Titan Lighting Console where a backup scenario is required where the current cue is synchronised between a master and backup console. It uses a WebAPI connection to the two consoles to read the current cue from the master and replicate that on a backup console running the same show. In addition to the live cue it will also sychronise the current set list track ensuring that master and backup consoles are always on the same page. You may run this program on a seperate computer on on the backup console.
+Cue Track is intended to be used with an Avolites Titan Lighting Console where a backup scenario synchronises the live cue between a master and backup console. It uses a WebAPI connection between the two consoles to read the current cue from the master and replicate that on the backup console running the same show. In addition to the live cue it will also sychronise the current set list track ensuring that master and backup consoles are always on the same page. You may run this program on a seperate computer on on the backup console.
 
 # Getting Started
 
@@ -21,27 +21,27 @@ As well as entering the master and backup IP addresses when the application star
 
 The following options can be used on the command line to set the tracking options and bypass the requirement to enter them within the application.
 
-/master {IP Address} - this sets the master IP address of the Titan console acting as the master.
-/backup {IP Address} - this sets the backup IP address of the Titan console acting as the backup.
-/port {Port Number} - the default WebAPI port is 4430 but if you are using a non standard port you may set it here.
+- `/master {IP Address}` - this sets the master IP address of the Titan console acting as the master.
+- `/backup {IP Address}` - this sets the backup IP address of the Titan console acting as the backup.
+- `/port {Port Number}` - the default WebAPI port is 4430 but if you are using a non standard port you may set it here.
 
-e.g. AvolitesTitanCueTrack.exe /master 10.0.0.1 /backup 10.0.0.2 /port 4431
+e.g. `AvolitesTitanCueTrack.exe /master 10.0.0.1 /backup 10.0.0.2 /port 4431`
 
 ## Application Settings
 
 Within the application directory is the appsettings.json file which allows you to specify options that will be used each time the application starts.
 
-"master": "{IP Address}" - this sets the master IP address of the Titan console acting as the master.
-"backup": "{IP Address}" - this sets the backup IP address of the Titan console acting as the backup.
-"port": "{Port Number}" - the default WebAPI port is 4430 but if you are using a non standard port you may set it here.
+- `"master": "{IP Address}"` - this sets the master IP address of the Titan console acting as the master.
+- `"backup": "{IP Address}"` - this sets the backup IP address of the Titan console acting as the backup.
+- `"port": "{Port Number}"` - the default WebAPI port is 4430 but if you are using a non standard port you may set it here.
 
-'''
+```
 {
   "master": "10.0.0.1",
   "backup": "10.0.0.2",
   "port": 4431
 }
-'''
+```
 
 # Set List Synchronisation
 
